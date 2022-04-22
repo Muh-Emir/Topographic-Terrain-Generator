@@ -8,6 +8,7 @@ public class TerrainGenerator : MonoBehaviour
 
     public List<Vector3> myVerts;
     public List<int> myTris;
+    public Color[] myColors;
 
     public int xSize = 20;
     public int zSize = 20;
@@ -15,6 +16,8 @@ public class TerrainGenerator : MonoBehaviour
     public float noiseDetail;
     public float noiseSize;
 
+    public Gradient myGradient;
+    float minHeight, maxHeight;
 
     void Awake()
     {
@@ -33,12 +36,12 @@ public class TerrainGenerator : MonoBehaviour
     void CreateShape()
     {
         CalculateVerts();
-        CalculateMyTris();
+        CalculateTris();
+        CreateColors();
     }
 
     void CalculateVerts()
     {
-
         for (int i = 0, z = 0; z <= zSize; z++)
         {
             for (int x = 0; x <= xSize; x++)
@@ -46,8 +49,6 @@ public class TerrainGenerator : MonoBehaviour
                 float y = (int)(Mathf.PerlinNoise(x * noiseDetail, z * noiseDetail) * noiseSize);
                 float nextxY = (int)(Mathf.PerlinNoise((x + 1) * noiseDetail, z * noiseDetail) * noiseSize);
                 float nextzY = (int)(Mathf.PerlinNoise(x * noiseDetail, (z + 1) * noiseDetail) * noiseSize);
-
-                
 
                 if (i - 1 >= 0 && i - 1 >= xSize && x > 0)
                 {
@@ -68,11 +69,17 @@ public class TerrainGenerator : MonoBehaviour
                     myVerts.Add(new Vector3(x + 1, y, z));
                 }
                 i++;
+
+                if (maxHeight < y)
+                    maxHeight = y;
+
+                if (minHeight > y)
+                    minHeight = y;
             }
         }
     }
 
-    void CalculateMyTris()
+    void CalculateTris()
     {
         int isXpos = 0;
         int isZpos = 0;
@@ -80,6 +87,7 @@ public class TerrainGenerator : MonoBehaviour
 
         for (int i = 0; i < myVerts.Count; i++)
         {
+            isCross = 0;
             for (int j = 0; j < myVerts.Count; j++)
             {
                 if (myVerts[i].x + 1 == myVerts[j].x && myVerts[i].y == myVerts[j].y && myVerts[i].z == myVerts[j].z)
@@ -113,19 +121,28 @@ public class TerrainGenerator : MonoBehaviour
         }
     }
 
+    void CreateColors()
+    {
+        myColors = new Color[myVerts.Count];
+
+        for (int i = 0; i < myVerts.Count; i++)
+        {
+            float height = Mathf.InverseLerp(minHeight, maxHeight, myVerts[i].y);
+            myColors[i] = myGradient.Evaluate(height);
+        }
+    }
+
     void UpdateMesh()
     {
         mesh.Clear();
 
-        //mesh.vertices = verticles;
         mesh.vertices = myVerts.ToArray();
-
-        //mesh.triangles = triangles;
         mesh.triangles = myTris.ToArray();
+        mesh.colors = myColors;
 
         mesh.RecalculateNormals();
     }
-    
+    /*
     private void OnDrawGizmos()
     {
         if (myVerts == null)
@@ -136,5 +153,5 @@ public class TerrainGenerator : MonoBehaviour
         {
             Gizmos.DrawSphere(myVerts[i], .1f);
         }
-    }
+    }*/
 }
