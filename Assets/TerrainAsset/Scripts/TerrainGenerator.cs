@@ -8,15 +8,9 @@ public class TerrainGenerator : MonoBehaviour
 
     public List<Vector3> myVerts;
     public List<int> myTris;
-    public Vector3[] verticles;
-    public int[] triangles;
 
     public int xSize = 20;
     public int zSize = 20;
-
-    public float detailScale;
-
-    public int minY, maxY;
 
     public float noiseDetail;
     public float noiseSize;
@@ -39,69 +33,42 @@ public class TerrainGenerator : MonoBehaviour
     void CreateShape()
     {
         CalculateVerts();
-        //CalculateTris();
         CalculateMyTris();
     }
 
     void CalculateVerts()
     {
-        verticles = new Vector3[(xSize + 1) * (zSize + 1)];
 
         for (int i = 0, z = 0; z <= zSize; z++)
         {
             for (int x = 0; x <= xSize; x++)
             {
                 float y = (int)(Mathf.PerlinNoise(x * noiseDetail, z * noiseDetail) * noiseSize);
+                float nextxY = (int)(Mathf.PerlinNoise((x + 1) * noiseDetail, z * noiseDetail) * noiseSize);
+                float nextzY = (int)(Mathf.PerlinNoise(x * noiseDetail, (z + 1) * noiseDetail) * noiseSize);
 
-                if (y < minY)
-                {
-                    y = verticles[i - 1].y;
-                }
-                if (y > maxY)
-                {
-                    y = verticles[i - 1].y;
-                }
+                
 
                 if (i - 1 >= 0 && i - 1 >= xSize && x > 0)
                 {
-                    if (verticles[i - 1].y != y && x != xSize - 1)
+                    if (myVerts[i - 1].y != y && x != xSize - 1)
                     {
-                        myVerts.Add(new Vector3(x - 1 * detailScale, y, z * detailScale));
+                        myVerts.Add(new Vector3(x - 1, y, z));
                     }
-                    if (verticles[i / zSize].y != y && z != zSize - 1)
+
+                    if (myVerts[i / zSize].y != y && z != zSize - 1)
                     {
-                        myVerts.Add(new Vector3(x * detailScale, y, z - 1 * detailScale));
+                        myVerts.Add(new Vector3(x, y, z - 1));
                     }
                 }
 
-                myVerts.Add(new Vector3(x * detailScale, y, z * detailScale));
-                verticles[i] = new Vector3(x * detailScale, y, z * detailScale);
+                myVerts.Add(new Vector3(x, y, z));
+                if (y != nextxY)
+                {
+                    myVerts.Add(new Vector3(x + 1, y, z));
+                }
                 i++;
             }
-        }
-    }
-
-    void CalculateTris()
-    {
-        triangles = new int[verticles.Length * 6];
-        int vert = 0;
-        int tris = 0;
-
-        for (int z = 0; z < zSize; z++)
-        {
-            for (int x = 0; x < xSize; x++)
-            {
-                triangles[tris + 0] = vert + 0;
-                triangles[tris + 1] = vert + xSize + 1;
-                triangles[tris + 2] = vert + 1;
-                triangles[tris + 3] = vert + 1;
-                triangles[tris + 4] = vert + xSize + 1;
-                triangles[tris + 5] = vert + xSize + 2;
-
-                vert++;
-                tris += 6;
-            }
-            vert++;
         }
     }
 
@@ -132,6 +99,7 @@ public class TerrainGenerator : MonoBehaviour
                     isCross = j;
                 }
             }
+
             myTris.Add(i);//0
             myTris.Add(isZpos);//1
             myTris.Add(isXpos);//2
@@ -141,6 +109,7 @@ public class TerrainGenerator : MonoBehaviour
                 myTris.Add(isCross);//3
                 myTris.Add(isXpos);//2
             }
+
         }
     }
 
@@ -156,16 +125,16 @@ public class TerrainGenerator : MonoBehaviour
 
         mesh.RecalculateNormals();
     }
-    /*
+    
     private void OnDrawGizmos()
     {
         if (myVerts == null)
         {
             return;
         }
-        for (int i = 0; i < verticles.Length; i++)
+        for (int i = 0; i < myVerts.Count; i++)
         {
             Gizmos.DrawSphere(myVerts[i], .1f);
         }
-    }*/
+    }
 }
