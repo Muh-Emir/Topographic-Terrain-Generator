@@ -172,10 +172,8 @@ MonoBehaviour:
   myTris: 
   verticles: []
   triangles: 
-  xSize: 5
-  zSize: 5
-  xNewSize: 20
-  zNewSize: 20
+  xSize: 100
+  zSize: 100
   detailScale: 1
   minY: 2
   maxY: 5

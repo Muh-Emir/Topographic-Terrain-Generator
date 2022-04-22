@@ -7,15 +7,12 @@ public class TerrainGenerator : MonoBehaviour
     Mesh mesh;
 
     public List<Vector3> myVerts;
-    public int[] myTris;
+    public List<int> myTris;
     public Vector3[] verticles;
     public int[] triangles;
 
     public int xSize = 20;
     public int zSize = 20;
-
-    public int xNewSize;
-    public int zNewSize;
 
     public float detailScale;
 
@@ -43,7 +40,7 @@ public class TerrainGenerator : MonoBehaviour
     {
         CalculateVerts();
         //CalculateTris();
-        //CalculateMyTris();
+        CalculateMyTris();
     }
 
     void CalculateVerts()
@@ -81,10 +78,7 @@ public class TerrainGenerator : MonoBehaviour
                 verticles[i] = new Vector3(x * detailScale, y, z * detailScale);
                 i++;
             }
-            if (z == 0)
-                xNewSize = myVerts.Count - 1;
         }
-        zNewSize = myVerts.Count / xNewSize - 1;
     }
 
     void CalculateTris()
@@ -113,22 +107,39 @@ public class TerrainGenerator : MonoBehaviour
 
     void CalculateMyTris()
     {
-        myTris = new int[myVerts.Count * 6];
-        int tris = 0;
+        int isXpos = 0;
+        int isZpos = 0;
+        int isCross = 0;
 
-        for (int vert = 0, z = 0; z < zNewSize; z++,vert++)
+        for (int i = 0; i < myVerts.Count; i++)
         {
-            for (int x = 0; x < xNewSize; x++)
+            for (int j = 0; j < myVerts.Count; j++)
             {
-                myTris[tris + 0] = vert + 0;
-                myTris[tris + 1] = vert + xSize + 1;
-                myTris[tris + 2] = vert + 1;
-                myTris[tris + 3] = vert + 1;
-                myTris[tris + 4] = vert + xSize + 1;
-                myTris[tris + 5] = vert + xSize + 2;
+                if (myVerts[i].x + 1 == myVerts[j].x && myVerts[i].y == myVerts[j].y && myVerts[i].z == myVerts[j].z)
+                {
+                    //saðýndaki
+                    isXpos = j;
+                }
 
-                vert++;
-                tris += 6;
+                if (myVerts[i].x == myVerts[j].x && myVerts[i].y == myVerts[j].y && myVerts[i].z + 1 == myVerts[j].z)
+                {
+                    //önündeki
+                    isZpos = j;
+                }
+
+                if (myVerts[i].x + 1 == myVerts[j].x && myVerts[i].y == myVerts[j].y && myVerts[i].z + 1 == myVerts[j].z)
+                {
+                    isCross = j;
+                }
+            }
+            myTris.Add(i);//0
+            myTris.Add(isZpos);//1
+            myTris.Add(isXpos);//2
+            if (isCross != 0)
+            {
+                myTris.Add(isZpos);//1
+                myTris.Add(isCross);//3
+                myTris.Add(isXpos);//2
             }
         }
     }
@@ -140,12 +151,12 @@ public class TerrainGenerator : MonoBehaviour
         //mesh.vertices = verticles;
         mesh.vertices = myVerts.ToArray();
 
-        mesh.triangles = triangles;
-        //mesh.triangles = myTris;
+        //mesh.triangles = triangles;
+        mesh.triangles = myTris.ToArray();
 
         mesh.RecalculateNormals();
     }
-    
+    /*
     private void OnDrawGizmos()
     {
         if (myVerts == null)
@@ -156,5 +167,5 @@ public class TerrainGenerator : MonoBehaviour
         {
             Gizmos.DrawSphere(myVerts[i], .1f);
         }
-    }
+    }*/
 }
