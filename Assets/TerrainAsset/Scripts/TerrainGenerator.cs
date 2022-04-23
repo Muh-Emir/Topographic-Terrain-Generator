@@ -100,6 +100,8 @@ public class TerrainGenerator : MonoBehaviour
         int isXpos = 0;
         int isZpos = 0;
         int isCross = 0;
+        bool isOk = false;
+        bool isOk2 = false;
 
         for (int i = 0; i < myVerts.Count; i++)
         {
@@ -112,12 +114,14 @@ public class TerrainGenerator : MonoBehaviour
                     {
                         //saðýndaki
                         isXpos = j;
+                        isOk = true;
                     }
 
                     if (myVerts[i].x == myVerts[j].x && myVerts[i].z + cellSize == myVerts[j].z)
                     {
                         //önündeki
                         isZpos = j;
+                        isOk2 = true;
                     }
 
                     if (myVerts[i].x + cellSize == myVerts[j].x && myVerts[i].z + cellSize == myVerts[j].z)
@@ -127,16 +131,19 @@ public class TerrainGenerator : MonoBehaviour
                 }
             }
 
-            myTris.Add(i);//0
-            myTris.Add(isZpos);//1
-            myTris.Add(isXpos);//2
-            if (isCross != 0)
+            if (isOk && isOk2)
             {
+                myTris.Add(i);//0
                 myTris.Add(isZpos);//1
-                myTris.Add(isCross);//3
                 myTris.Add(isXpos);//2
-            }
 
+                if (isCross != 0)
+                {
+                    myTris.Add(isZpos);//1
+                    myTris.Add(isCross);//3
+                    myTris.Add(isXpos);//2
+                }
+            }
         }
     }
 
