@@ -171,6 +171,7 @@ MonoBehaviour:
   myVerts: []
   myTris: 
   myColors: []
+  cellSize: 1
   xSize: 20
   zSize: 20
   noiseDetail: 0.1

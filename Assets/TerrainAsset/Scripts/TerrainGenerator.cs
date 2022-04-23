@@ -10,6 +10,7 @@ public class TerrainGenerator : MonoBehaviour
     public List<int> myTris;
     public Color[] myColors;
 
+    public float cellSize;
     public int xSize = 20;
     public int zSize = 20;
 
@@ -47,26 +48,41 @@ public class TerrainGenerator : MonoBehaviour
             for (int x = 0; x <= xSize; x++)
             {
                 float y = (int)(Mathf.PerlinNoise(x * noiseDetail, z * noiseDetail) * noiseSize);
-                float nextxY = (int)(Mathf.PerlinNoise((x + 1) * noiseDetail, z * noiseDetail) * noiseSize);
-                float nextzY = (int)(Mathf.PerlinNoise(x * noiseDetail, (z + 1) * noiseDetail) * noiseSize);
+
+                Vector2 prevY = new Vector2((int)(Mathf.PerlinNoise((x - 1) * noiseDetail, z * noiseDetail) * noiseSize),
+                    (int)(Mathf.PerlinNoise(x * noiseDetail, (z - 1) * noiseDetail) * noiseSize));
+
+                Vector2 nextY = new Vector2((int)(Mathf.PerlinNoise((x + 1) * noiseDetail, z * noiseDetail) * noiseSize),
+                     (int)(Mathf.PerlinNoise(x * noiseDetail, (z + 1) * noiseDetail) * noiseSize));
+
+                if (prevY.x != y && nextY.x != y)
+                {
+                    y = prevY.x;
+                }
+
+                if (prevY.y != y && nextY.y != y)
+                {
+                    y = prevY.y;
+                }
 
                 if (i - 1 >= 0 && i - 1 >= xSize && x > 0)
                 {
                     if (myVerts[i - 1].y != y && x != xSize - 1)
                     {
-                        myVerts.Add(new Vector3(x - 1, y, z));
+                        myVerts.Add(new Vector3((x - 1) * cellSize, y, z * cellSize));
                     }
 
                     if (myVerts[i / zSize].y != y && z != zSize - 1)
                     {
-                        myVerts.Add(new Vector3(x, y, z - 1));
+                        myVerts.Add(new Vector3(x * cellSize, y, (z - 1) * cellSize));
                     }
                 }
 
-                myVerts.Add(new Vector3(x, y, z));
-                if (y != nextxY)
+                myVerts.Add(new Vector3(x * cellSize, y, z * cellSize));
+
+                if (y != nextY.x && x < xSize)
                 {
-                    myVerts.Add(new Vector3(x + 1, y, z));
+                    myVerts.Add(new Vector3((x + 1) * cellSize, y, z * cellSize));
                 }
                 i++;
 
@@ -76,7 +92,7 @@ public class TerrainGenerator : MonoBehaviour
                 if (minHeight > y)
                     minHeight = y;
             }
-        }
+        }        
     }
 
     void CalculateTris()
@@ -90,21 +106,24 @@ public class TerrainGenerator : MonoBehaviour
             isCross = 0;
             for (int j = 0; j < myVerts.Count; j++)
             {
-                if (myVerts[i].x + 1 == myVerts[j].x && myVerts[i].y == myVerts[j].y && myVerts[i].z == myVerts[j].z)
+                if (myVerts[i].y == myVerts[j].y)
                 {
-                    //saðýndaki
-                    isXpos = j;
-                }
+                    if (myVerts[i].x + cellSize == myVerts[j].x && myVerts[i].z == myVerts[j].z)
+                    {
+                        //saðýndaki
+                        isXpos = j;
+                    }
 
-                if (myVerts[i].x == myVerts[j].x && myVerts[i].y == myVerts[j].y && myVerts[i].z + 1 == myVerts[j].z)
-                {
-                    //önündeki
-                    isZpos = j;
-                }
+                    if (myVerts[i].x == myVerts[j].x && myVerts[i].z + cellSize == myVerts[j].z)
+                    {
+                        //önündeki
+                        isZpos = j;
+                    }
 
-                if (myVerts[i].x + 1 == myVerts[j].x && myVerts[i].y == myVerts[j].y && myVerts[i].z + 1 == myVerts[j].z)
-                {
-                    isCross = j;
+                    if (myVerts[i].x + cellSize == myVerts[j].x && myVerts[i].z + cellSize == myVerts[j].z)
+                    {
+                        isCross = j;
+                    }
                 }
             }
 
@@ -142,7 +161,7 @@ public class TerrainGenerator : MonoBehaviour
 
         mesh.RecalculateNormals();
     }
-    /*
+    
     private void OnDrawGizmos()
     {
         if (myVerts == null)
@@ -153,5 +172,5 @@ public class TerrainGenerator : MonoBehaviour
         {
             Gizmos.DrawSphere(myVerts[i], .1f);
         }
-    }*/
+    }
 }
